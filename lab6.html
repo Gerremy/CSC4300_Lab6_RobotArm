@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<head>
+<title>Robotic Arm</title>
+<script src="https://csc-vu.github.io/lib/three.js"></script>
+<script src="https://csc-vu.github.io/lib/KeyboardState.js"></script>
+
+<script>
+    var scene, camera, renderer; // Three.js rendering basics.
+    var canvas; // The canvas on which the image is rendered.
+
+    var keyboard = new KeyboardState();
+
+    // Parts of our robotic arm 
+    var upperArm, lowerArm; 
+    
+    // Create a camera, sitting on the positive z-axis.  The camera is not part of the scene
+    function createCamera() {
+        camera = new THREE.PerspectiveCamera(25, canvas.width/canvas.height, 1, 30);
+        camera.position.set(0, 0, 20);
+    }
+
+    function createArm(radius,length) // radius is half the arm width (scale factor)
+    {
+        // Set up cube geometry and material 
+        var cubeGeom = new THREE.BoxGeometry(1,1,1); // do not change parameters
+
+        // Draw each face of the cube in a different color
+        var cubeMat = [  // An array of materials
+            new THREE.MeshBasicMaterial( { color: "red" } ),     // +x face
+            new THREE.MeshBasicMaterial( { color: "cyan" } ),    // -x face
+            new THREE.MeshBasicMaterial( { color: "green" } ),   // +y face
+            new THREE.MeshBasicMaterial( { color: "magenta" } ), // -y face
+            new THREE.MeshBasicMaterial( { color: "yellow" } ),  // +z face
+            new THREE.MeshBasicMaterial( { color: "blue" } )     // -z face
+        ];
+
+        // Set up the arm mesh
+        var cubeMesh = new THREE.Mesh(cubeGeom, cubeMat);
+        
+        // TODO Step 4: scale, translate and rotate -- add your code here
+        cubeMesh.scale.set(2,0.5,1); // scale in the x,y,z directions
+        cubeMesh.position.x = 1;   // translate in the x direction
+        //cubeMesh.rotation.z -= Math.PI/4; // rotate clockwise about z
+
+        // TODO Step 5: arm container -- add your code here
+        // Initialize the upper arm container 
+        var arm = new THREE.Object3D();
+        arm.add(cubeMesh);
+        return arm;         // replaces the "return cubeMesh" line
+
+        //return cubeMesh;    // TO DO Step 5: change return value
+    }
+
+    // Create the scene. This function is called once, as soon as the page loads.
+    // The renderer has already been created before this function is called.
+    function createScene() {
+        
+        renderer.setClearColor(0); // Set background color (0, or 0x000000, is black).
+        scene = new THREE.Scene(); // Create a new scene which we can add objects to.
+        
+        // add world coordinate system for guidance
+        var axesHelper = new THREE.AxesHelper( 4 );
+        scene.add( axesHelper );
+
+        // Set up arm dimensions (same for upper and lower arm)
+        var armRadius = 0.5;
+        var armLength = 2;
+        
+        // Set up the upper arm (global variable)
+        upperArm = createArm(armRadius, armLength);
+        scene.add(upperArm);
+     
+        // TODO: Step 6: add the lower arm
+
+        lowerArm = createArm(armRadius, armLength);
+        upperArm.add(lowerArm);
+        lowerArm.position.x += 2;
+
+        upperArm.rotation.x = 0.2;
+        upperArm.rotation.y = -0.4; // just to get a better view
+    }
+
+    
+    function update() {
+        keyboard.update();
+
+        if ( keyboard.down("left") ) {
+            // TODO rotate arm clockwise
+            upperArm.rotation.z += .1;
+        }
+        if ( keyboard.down("right") ) {
+            // TODO rotate arm counter-clockwise
+            upperArm.rotation.z -= .1;
+        }
+        if ( keyboard.pressed("down") ) {
+            // TODO rotate lowerArm clockwise
+            lowerArm.rotation.z += .1;
+        }
+        if ( keyboard.pressed("up") ) {
+            // TODO rotate lowerArm counter-clockwise
+            lowerArm.rotation.z -= .1;
+        }
+    } 
+    
+
+    // Render the scene. This is called for each frame of the animation.
+    function render() {
+        renderer.render(scene, camera);
+
+        // TODO Step 5: add code to rotate upperArm
+
+        // upperArm.rotation.z += .1;
+
+        // TODO Step 7: add code to rotate lowerArm
+
+        // lowerArm.rotation.z += .1;
+
+        update();
+
+        requestAnimationFrame( render );
+    }
+
+    //----------------------------------------------------------------------------------
+
+    // The main() function is called by the onload event when the document has loaded.
+    function main() {
+        try {
+            canvas = document.getElementById("glcanvas");
+            renderer = new THREE.WebGLRenderer( { canvas: canvas, antialias: true} );
+        }
+        catch (e) {
+            document.getElementById("canvas-holder").innerHTML = "<h3><b>WebGL is not available.</b><h3>";
+            return;
+        }
+    
+        // create camera
+        createCamera();
+        
+        // create scene 
+        createScene();
+
+        // render scene
+        render();
+    }
+
+</script>
+
+</head>
+<body onload="main()">
+<div id="canvas-holder">
+    <canvas id="glcanvas" width="600" height="400"></canvas>
+</div>
+</body>
+</html>
